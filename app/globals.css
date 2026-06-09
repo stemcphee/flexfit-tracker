@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top left, rgba(180, 214, 205, 0.55), transparent 34%),
+    linear-gradient(180deg, #faf7f0 0%, #f3efe7 100%);
+}
+
+body {
+  min-height: 100vh;
+  color: #172126;
+  background: transparent;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button,
+input,
+select,
+textarea {
+  outline: none;
+}
+
+input,
+select,
+textarea {
+  @apply w-full rounded-2xl border border-ink/10 bg-white px-4 py-3 text-sm text-ink placeholder:text-slate/60 focus:border-moss/50 focus:ring-2 focus:ring-moss/15;
+}
+
+button {
+  @apply transition-transform duration-150;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+.app-shell {
+  @apply mx-auto min-h-screen max-w-6xl px-4 pb-28 pt-5 sm:px-6;
+}
+
+.card {
+  @apply rounded-4xl border border-white/70 bg-white/90 p-5 shadow-card backdrop-blur;
+}
+
+.section-title {
+  @apply text-lg font-semibold tracking-tight text-ink;
+}
+
+.helper {
+  @apply text-sm text-slate;
+}
