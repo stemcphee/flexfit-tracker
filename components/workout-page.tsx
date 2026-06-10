@@ -16,8 +16,10 @@ export function WorkoutPageView() {
   const { data, hydrated, addWorkoutSession } = useData();
   const initialType = (searchParams?.get("type") as WorkoutType | null) ?? "Push";
   const initialDuration = Number(searchParams?.get("duration") ?? 25);
+  const initialDate = searchParams?.get("date") ?? getTodayDate();
+  const mode = searchParams?.get("mode");
   const [selectedType, setSelectedType] = useState<WorkoutType>(initialType);
-  const [date, setDate] = useState(getTodayDate());
+  const [date, setDate] = useState(initialDate);
   const [durationMinutes, setDurationMinutes] = useState(Number.isFinite(initialDuration) ? initialDuration : 25);
   const [notes, setNotes] = useState("");
   const [message, setMessage] = useState("");
@@ -41,8 +43,10 @@ export function WorkoutPageView() {
   useEffect(() => {
     const nextType = (searchParams?.get("type") as WorkoutType | null) ?? "Push";
     const nextDuration = Number(searchParams?.get("duration") ?? 25);
+    const nextDate = searchParams?.get("date") ?? getTodayDate();
     setSelectedType(nextType);
     setDurationMinutes(Number.isFinite(nextDuration) ? nextDuration : 25);
+    setDate(nextDate);
   }, [searchParams]);
 
   if (!hydrated) {
@@ -67,8 +71,12 @@ export function WorkoutPageView() {
     <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
       <div className="space-y-4">
       <PageHeader
-        title="Start Workout"
-        description="Pick the session and time you actually have. The app builds the workout around that."
+        title={mode === "log" ? "Log Workout" : "Start Workout"}
+        description={
+          mode === "log"
+            ? "Add a session for today or any previous date. The workout will still use your exercise history."
+            : "Pick the session and time you actually have. The app builds the workout around that."
+        }
       />
 
       <Card>
@@ -84,8 +92,9 @@ export function WorkoutPageView() {
             </select>
           </div>
           <div>
-            <label className="mb-2 block text-sm font-medium text-ink">Date</label>
+            <label className="mb-2 block text-sm font-medium text-ink">Workout date</label>
             <input type="date" value={date} onChange={(event) => setDate(event.target.value)} />
+            <p className="mt-2 text-xs text-slate">Choose any earlier date if you are logging a past session.</p>
           </div>
           <div>
             <label className="mb-2 block text-sm font-medium text-ink">Planned duration</label>

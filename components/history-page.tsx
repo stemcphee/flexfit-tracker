@@ -1,8 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useData } from "@/components/data-provider";
 import { PageHeader } from "@/components/page-header";
-import { Card, Pill } from "@/components/ui";
+import { Button, Card, Pill } from "@/components/ui";
 import { compareDescByDate, formatDate, getSessionVolume } from "@/lib/utils";
 
 export function HistoryPageView() {
@@ -13,7 +14,21 @@ export function HistoryPageView() {
 
   return (
     <div className="space-y-4">
-      <PageHeader title="Workout History" description="Review previous sessions, loads, and rep performance." />
+      <PageHeader
+        title="Workout History"
+        description="Review previous sessions, loads, and rep performance."
+        action={
+          <Link href="/workout?mode=log">
+            <Button>Log past workout</Button>
+          </Link>
+        }
+      />
+      <Card className="bg-sand">
+        <p className="text-sm font-semibold text-ink">Add a previous workout</p>
+        <p className="mt-2 text-sm text-slate">
+          Use the workout screen, change the workout date to any earlier day, then save the session normally.
+        </p>
+      </Card>
       {sessions.length === 0 ? (
         <Card>No workout sessions saved yet.</Card>
       ) : (

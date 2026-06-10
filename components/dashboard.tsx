@@ -48,6 +48,12 @@ export function DashboardView() {
               {duration} min
             </Link>
           ))}
+          <Link
+            href="/workout?mode=log"
+            className="inline-flex rounded-2xl border border-white/20 px-4 py-3 text-sm font-semibold text-white"
+          >
+            Log past workout
+          </Link>
         </div>
       </Card>
 
