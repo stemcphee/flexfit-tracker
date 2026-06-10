@@ -7,7 +7,7 @@ import { Button, Card, Pill } from "@/components/ui";
 import { compareDescByDate, formatDate, getSessionVolume } from "@/lib/utils";
 
 export function HistoryPageView() {
-  const { data, hydrated } = useData();
+  const { data, hydrated, removeWorkoutSession } = useData();
   if (!hydrated) return <Card>Loading local data…</Card>;
 
   const sessions = compareDescByDate(data.workoutSessions);
@@ -39,7 +39,12 @@ export function HistoryPageView() {
                 <h3 className="text-xl font-semibold">{session.workoutType}</h3>
                 <p className="mt-1 text-sm text-slate">{formatDate(session.date)} • {session.durationMinutes} min</p>
               </div>
-              <Pill>{getSessionVolume(session)} reps</Pill>
+              <div className="flex items-center gap-2">
+                <Pill>{getSessionVolume(session)} reps</Pill>
+                <Button variant="ghost" onClick={() => removeWorkoutSession(session.id)}>
+                  Delete
+                </Button>
+              </div>
             </div>
             <div className="mt-4 space-y-3">
               {session.exercises.map((exercise) => (

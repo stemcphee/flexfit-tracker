@@ -25,6 +25,7 @@ export function WorkoutPageView() {
   const [message, setMessage] = useState("");
   const [activeRestSeconds, setActiveRestSeconds] = useState(90);
   const [restTrigger, setRestTrigger] = useState(0);
+  const [justSaved, setJustSaved] = useState(false);
 
   const template = useMemo(() => {
     return getWorkoutTemplate(selectedType, data.equipment);
@@ -47,6 +48,7 @@ export function WorkoutPageView() {
     setSelectedType(nextType);
     setDurationMinutes(Number.isFinite(nextDuration) ? nextDuration : 25);
     setDate(nextDate);
+    setJustSaved(false);
   }, [searchParams]);
 
   if (!hydrated) {
@@ -54,7 +56,7 @@ export function WorkoutPageView() {
   }
 
   const saveWorkout = () => {
-    if (!template || !workoutPlan) return;
+    if (!template || !workoutPlan || justSaved) return;
     addWorkoutSession({
       date,
       workoutType: selectedType,
@@ -65,6 +67,7 @@ export function WorkoutPageView() {
     setNotes("");
     setMessage(`${selectedType} workout saved locally.`);
     setExerciseState(workoutPlan.exercises);
+    setJustSaved(true);
   };
 
   return (
@@ -144,7 +147,19 @@ export function WorkoutPageView() {
             <Card key={exercise.id}>
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-lg font-semibold">{exercise.exerciseName}</p>
+                  <input
+                    list="exercise-name-suggestions"
+                    className="border-0 bg-transparent px-0 py-0 text-lg font-semibold"
+                    value={exercise.exerciseName}
+                    onChange={(event) => {
+                      setJustSaved(false);
+                      setExerciseState((current) =>
+                        current.map((item, itemIndex) =>
+                          itemIndex === index ? { ...item, exerciseName: event.target.value } : item,
+                        ),
+                      );
+                    }}
+                  />
                   <p className="mt-1 text-sm text-slate">{exercise.notes}</p>
                 </div>
                 {exercise.insight.isPersonalRecord ? <Pill tone="good">PR</Pill> : null}
@@ -193,28 +208,30 @@ export function WorkoutPageView() {
                     step="0.5"
                     value={exercise.weight ?? ""}
                     placeholder="Bodyweight"
-                    onChange={(event) =>
+                    onChange={(event) => {
                       setExerciseState((current) =>
                         current.map((item, itemIndex) =>
                           itemIndex === index
                             ? { ...item, weight: event.target.value ? Number(event.target.value) : null }
                             : item,
                         ),
-                      )
-                    }
+                      );
+                      setJustSaved(false);
+                    }}
                   />
                 </div>
                 <div>
                   <label className="mb-2 block text-sm font-medium text-ink">RPE</label>
                   <select
                     value={exercise.rpe}
-                    onChange={(event) =>
+                    onChange={(event) => {
                       setExerciseState((current) =>
                         current.map((item, itemIndex) =>
                           itemIndex === index ? { ...item, rpe: event.target.value as typeof item.rpe } : item,
                         ),
-                      )
-                    }
+                      );
+                      setJustSaved(false);
+                    }}
                   >
                     <option>Easy</option>
                     <option>Moderate</option>
@@ -233,7 +250,7 @@ export function WorkoutPageView() {
                       type="number"
                       min={0}
                       value={rep}
-                      onChange={(event) =>
+                      onChange={(event) => {
                         setExerciseState((current) =>
                           current.map((item, itemIndex) =>
                             itemIndex === index
@@ -245,8 +262,9 @@ export function WorkoutPageView() {
                                 }
                               : item,
                           ),
-                        )
-                      }
+                        );
+                        setJustSaved(false);
+                      }}
                     />
                   ))}
                 </div>
@@ -257,26 +275,28 @@ export function WorkoutPageView() {
                   <label className="mb-2 block text-sm font-medium text-ink">Notes</label>
                   <input
                     value={exercise.notes}
-                    onChange={(event) =>
+                    onChange={(event) => {
                       setExerciseState((current) =>
                         current.map((item, itemIndex) =>
                           itemIndex === index ? { ...item, notes: event.target.value } : item,
                         ),
-                      )
-                    }
+                      );
+                      setJustSaved(false);
+                    }}
                   />
                 </div>
                 <div>
                   <label className="mb-2 block text-sm font-medium text-ink">Completed</label>
                   <select
                     value={exercise.completed ? "yes" : "no"}
-                    onChange={(event) =>
+                    onChange={(event) => {
                       setExerciseState((current) =>
                         current.map((item, itemIndex) =>
                           itemIndex === index ? { ...item, completed: event.target.value === "yes" } : item,
                         ),
-                      )
-                    }
+                      );
+                      setJustSaved(false);
+                    }}
                   >
                     <option value="yes">Yes</option>
                     <option value="no">No</option>
@@ -289,7 +309,9 @@ export function WorkoutPageView() {
           ))}
 
           <div className="flex items-center gap-3">
-            <Button onClick={saveWorkout}>Save workout</Button>
+            <Button onClick={saveWorkout} disabled={justSaved}>
+              {justSaved ? "Saved" : "Save workout"}
+            </Button>
             {message ? <p className="text-sm text-moss">{message}</p> : null}
           </div>
         </div>
@@ -299,6 +321,20 @@ export function WorkoutPageView() {
       <div className="space-y-4">
         <RestTimer defaultSeconds={activeRestSeconds} autoStartToken={restTrigger} />
       </div>
+      <datalist id="exercise-name-suggestions">
+        {Array.from(
+          new Set([
+            ...data.exerciseHistory.map((entry) => entry.exerciseName),
+            ...exerciseState.map((entry) => entry.exerciseName),
+            "Incline barbell bench press",
+            "Flat barbell bench press",
+            "Incline dumbbell press",
+            "Chest-supported dumbbell row",
+          ]),
+        ).map((name) => (
+          <option key={name} value={name} />
+        ))}
+      </datalist>
     </div>
   );
 }

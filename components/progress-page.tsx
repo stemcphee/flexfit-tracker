@@ -3,13 +3,13 @@
 import { useState } from "react";
 import { useData } from "@/components/data-provider";
 import { PageHeader } from "@/components/page-header";
-import { Card, Pill } from "@/components/ui";
+import { Button, Card, Pill } from "@/components/ui";
 import { getExerciseHistory, getStepGoalStreak } from "@/lib/progress";
 import { getMuscleBalance, getWeeklySummary } from "@/lib/recommendations";
 import { formatShortDate } from "@/lib/utils";
 
 export function ProgressPageView() {
-  const { data, hydrated } = useData();
+  const { data, hydrated, resetExerciseProgress } = useData();
   const [exerciseName, setExerciseName] = useState("Barbell bench press");
 
   if (!hydrated) return <Card>Loading local data…</Card>;
@@ -55,6 +55,11 @@ export function ProgressPageView() {
               ))}
             </select>
           </div>
+        </div>
+        <div className="mt-4 flex justify-end">
+          <Button variant="ghost" onClick={() => resetExerciseProgress(exerciseName)}>
+            Reset progression for this exercise
+          </Button>
         </div>
         <div className="mt-4 space-y-3">
           {history.length === 0 ? (

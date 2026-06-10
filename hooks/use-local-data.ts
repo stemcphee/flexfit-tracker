@@ -2,8 +2,37 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { defaultData, normalizeLocalData, readLocalData, writeLocalData } from "@/lib/storage";
-import { DailyActivity, EquipmentItem, ExerciseLog, FootballSession, LocalData, WorkoutSession } from "@/lib/types";
+import {
+  DailyActivity,
+  EquipmentItem,
+  ExerciseHistoryEntry,
+  ExerciseLog,
+  FootballSession,
+  LocalData,
+  WorkoutSession,
+} from "@/lib/types";
 import { makeId } from "@/lib/utils";
+
+function buildExerciseHistory(workoutSessions: WorkoutSession[]): ExerciseHistoryEntry[] {
+  return workoutSessions.flatMap((session) =>
+    session.exercises.map((exercise) => ({
+      id: makeId("history"),
+      date: session.date,
+      workoutSessionId: session.id,
+      workoutType: session.workoutType,
+      exerciseName: exercise.exerciseName,
+      muscleGroup: exercise.muscleGroup,
+      equipment: exercise.equipment,
+      sets: exercise.sets,
+      targetReps: exercise.targetReps,
+      actualReps: exercise.actualReps,
+      weight: exercise.weight,
+      rpe: exercise.rpe,
+      completed: exercise.completed,
+      notes: exercise.notes,
+    })),
+  );
+}
 
 export function useLocalData() {
   const [data, setData] = useState<LocalData>(defaultData);
@@ -27,33 +56,36 @@ export function useLocalData() {
         setData((current) => ({
           ...current,
           workoutSessions: [fullSession, ...current.workoutSessions],
-          exerciseHistory: [
-            ...fullSession.exercises.map((exercise) => ({
-              id: makeId("history"),
-              date: fullSession.date,
-              workoutSessionId: fullSession.id,
-              workoutType: fullSession.workoutType,
-              exerciseName: exercise.exerciseName,
-              muscleGroup: exercise.muscleGroup,
-              equipment: exercise.equipment,
-              sets: exercise.sets,
-              targetReps: exercise.targetReps,
-              actualReps: exercise.actualReps,
-              weight: exercise.weight,
-              rpe: exercise.rpe,
-              completed: exercise.completed,
-              notes: exercise.notes,
-            })),
-            ...current.exerciseHistory,
-          ],
+          exerciseHistory: buildExerciseHistory([fullSession, ...current.workoutSessions]),
         }));
       },
       updateWorkoutExercises: (sessionId: string, exercises: ExerciseLog[]) => {
+        setData((current) => {
+          const workoutSessions = current.workoutSessions.map((session) =>
+            session.id === sessionId ? { ...session, exercises } : session,
+          );
+
+          return {
+            ...current,
+            workoutSessions,
+            exerciseHistory: buildExerciseHistory(workoutSessions),
+          };
+        });
+      },
+      removeWorkoutSession: (sessionId: string) => {
+        setData((current) => {
+          const workoutSessions = current.workoutSessions.filter((session) => session.id !== sessionId);
+          return {
+            ...current,
+            workoutSessions,
+            exerciseHistory: buildExerciseHistory(workoutSessions),
+          };
+        });
+      },
+      resetExerciseProgress: (exerciseName: string) => {
         setData((current) => ({
           ...current,
-          workoutSessions: current.workoutSessions.map((session) =>
-            session.id === sessionId ? { ...session, exercises } : session,
-          ),
+          exerciseHistory: current.exerciseHistory.filter((entry) => entry.exerciseName !== exerciseName),
         }));
       },
       saveDailyActivity: (entry: Omit<DailyActivity, "id">) => {
