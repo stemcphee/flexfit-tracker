@@ -13,6 +13,17 @@ export const defaultData: LocalData = {
   exerciseHistory: [],
 };
 
+export function normalizeLocalData(parsed: Partial<LocalData> | null | undefined): LocalData {
+  return {
+    workoutSessions: parsed?.workoutSessions ?? [],
+    dailyActivity: parsed?.dailyActivity ?? [],
+    footballSessions: parsed?.footballSessions ?? [],
+    equipment:
+      parsed?.equipment && parsed.equipment.length > 0 ? parsed.equipment : DEFAULT_EQUIPMENT,
+    exerciseHistory: parsed?.exerciseHistory ?? [],
+  };
+}
+
 export function readLocalData(): LocalData {
   if (typeof window === "undefined") return defaultData;
 
@@ -24,14 +35,7 @@ export function readLocalData(): LocalData {
     }
 
     const parsed = JSON.parse(raw) as Partial<LocalData>;
-    return {
-      workoutSessions: parsed.workoutSessions ?? [],
-      dailyActivity: parsed.dailyActivity ?? [],
-      footballSessions: parsed.footballSessions ?? [],
-      equipment:
-        parsed.equipment && parsed.equipment.length > 0 ? parsed.equipment : DEFAULT_EQUIPMENT,
-      exerciseHistory: parsed.exerciseHistory ?? [],
-    };
+    return normalizeLocalData(parsed);
   } catch {
     return defaultData;
   }

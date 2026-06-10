@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { defaultData, readLocalData, writeLocalData } from "@/lib/storage";
+import { defaultData, normalizeLocalData, readLocalData, writeLocalData } from "@/lib/storage";
 import { DailyActivity, EquipmentItem, ExerciseLog, FootballSession, LocalData, WorkoutSession } from "@/lib/types";
 import { makeId } from "@/lib/utils";
 
@@ -82,6 +82,9 @@ export function useLocalData() {
       },
       saveEquipment: (items: EquipmentItem[]) => {
         setData((current) => ({ ...current, equipment: items }));
+      },
+      importAllData: (incoming: Partial<LocalData>) => {
+        setData(normalizeLocalData(incoming));
       },
       resetAllData: () => {
         setData(defaultData);
